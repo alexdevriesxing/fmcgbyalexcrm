@@ -1,0 +1,24 @@
+{
+  "name": "@fmcgbyalex/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "wrangler deploy --dry-run",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node --test",
+    "cf-typegen": "wrangler types"
+  },
+  "dependencies": {
+    "@fmcgbyalex/contracts": "workspace:*",
+    "hono": "^4.12.31"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260718.1",
+    "typescript": "^5.9.2",
+    "wrangler": "^4.0.0"
+  }
+}
