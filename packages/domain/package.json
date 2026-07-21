@@ -12,6 +12,9 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "node --experimental-strip-types --test src/**/*.test.mjs"
   },
+  "dependencies": {
+    "@fmcgbyalex/contracts": "workspace:*"
+  },
   "devDependencies": {
     "typescript": "^5.9.2"
   }
