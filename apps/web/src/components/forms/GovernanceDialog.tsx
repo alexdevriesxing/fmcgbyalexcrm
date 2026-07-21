@@ -24,10 +24,11 @@ function DecisionDialog({ request, onClose }: { request: ApprovalRequestSummary;
   const [decision, setDecision] = useState<ApprovalDecisionValue>('approve');
   const [comment, setComment] = useState('');
   const currentStep = request.steps.find((step) => step.stepNumber === request.currentStepNumber);
+  const pending = request.status === 'pending';
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (decision === 'reject' && !comment.trim()) return;
+    if (!pending || (decision === 'reject' && !comment.trim())) return;
     try {
       await application.decideApproval(request.id, {
         decision,
@@ -40,26 +41,51 @@ function DecisionDialog({ request, onClose }: { request: ApprovalRequestSummary;
   }
 
   return (
-    <Modal eyebrow="Maker-checker decision" title={request.title} description={request.description ?? 'Review the immutable request snapshot before deciding.'} onClose={onClose} width="wide">
+    <Modal
+      eyebrow={pending ? 'Maker-checker decision' : 'Approval audit record'}
+      title={request.title}
+      description={request.description ?? 'Review the immutable request snapshot and decision history.'}
+      onClose={onClose}
+      width="wide"
+    >
       <div className="approval-review-grid">
         <dl>
+          <div><dt>Status</dt><dd><span className={`approval-state ${request.status}`}>{request.status}</span></dd></div>
+          <div><dt>Execution</dt><dd>{request.executionStatus}</dd></div>
           <div><dt>Requester</dt><dd>{request.requesterDisplayName}</dd></div>
           <div><dt>Resource</dt><dd>{request.resourceType} · {request.resourceId}</dd></div>
           <div><dt>Action</dt><dd>{request.action}</dd></div>
           <div><dt>Current step</dt><dd>{request.currentStepNumber} of {request.totalSteps}</dd></div>
           <div><dt>Required permission</dt><dd>{currentStep?.requiredPermission ?? 'Policy snapshot'}</dd></div>
           <div><dt>Minimum approvers</dt><dd>{currentStep?.minimumApprovers ?? 1}</dd></div>
+          <div><dt>Created</dt><dd>{formatDateTime(request.createdAt)}</dd></div>
+          <div><dt>Resolved</dt><dd>{request.resolvedAt ? formatDateTime(request.resolvedAt) : 'Pending'}</dd></div>
         </dl>
         <div className="payload-panel"><span className="eyebrow">Requested payload</span><pre>{JSON.stringify(request.payload, null, 2)}</pre></div>
       </div>
-      <form className="operational-form" onSubmit={(event) => void submit(event)}>
-        <div className="decision-toggle" role="radiogroup" aria-label="Approval decision">
-          <button className={decision === 'approve' ? 'active approve' : ''} type="button" role="radio" aria-checked={decision === 'approve'} onClick={() => setDecision('approve')}>Approve</button>
-          <button className={decision === 'reject' ? 'active reject' : ''} type="button" role="radio" aria-checked={decision === 'reject'} onClick={() => setDecision('reject')}>Reject</button>
-        </div>
-        <label><span>Decision comment {decision === 'reject' ? '(required)' : '(optional)'}</span><textarea required={decision === 'reject'} rows={4} value={comment} onChange={(event) => setComment(event.target.value)} placeholder="Record the business rationale for the immutable audit trail" /></label>
-        <div className="form-actions"><button className="ghost-button" type="button" onClick={onClose}>Cancel</button><button className={`primary-button ${decision === 'reject' ? 'danger-button' : ''}`} type="submit" disabled={application.busyAction !== null || (decision === 'reject' && !comment.trim())}>{application.busyAction ?? (decision === 'approve' ? 'Approve request' : 'Reject request')}</button></div>
-      </form>
+
+      <div className="approval-history">
+        <div className="form-section-heading"><div><span className="eyebrow">Immutable history</span><h3>Policy steps and decisions</h3></div></div>
+        {request.steps.map((step) => (
+          <article key={step.stepNumber}>
+            <div><span className={`approval-state ${step.status}`}>{step.status}</span><strong>Step {step.stepNumber}</strong><small>{step.requiredPermission} · {step.approvedCount}/{step.minimumApprovers} approvals</small></div>
+            {step.decisions.length === 0 ? <span className="history-empty">No decision recorded</span> : step.decisions.map((record) => <div className="decision-record" key={record.id}><strong>{record.deciderDisplayName}</strong><span className={`approval-state ${record.decision === 'approve' ? 'approved' : 'rejected'}`}>{record.decision}</span><small>{formatDateTime(record.createdAt)}{record.comment ? ` · ${record.comment}` : ''}</small></div>)}
+          </article>
+        ))}
+      </div>
+
+      {pending ? (
+        <form className="operational-form approval-decision-form" onSubmit={(event) => void submit(event)}>
+          <div className="decision-toggle" role="radiogroup" aria-label="Approval decision">
+            <button className={decision === 'approve' ? 'active approve' : ''} type="button" role="radio" aria-checked={decision === 'approve'} onClick={() => setDecision('approve')}>Approve</button>
+            <button className={decision === 'reject' ? 'active reject' : ''} type="button" role="radio" aria-checked={decision === 'reject'} onClick={() => setDecision('reject')}>Reject</button>
+          </div>
+          <label><span>Decision comment {decision === 'reject' ? '(required)' : '(optional)'}</span><textarea required={decision === 'reject'} rows={4} value={comment} onChange={(event) => setComment(event.target.value)} placeholder="Record the business rationale for the immutable audit trail" /></label>
+          <div className="form-actions"><button className="ghost-button" type="button" onClick={onClose}>Cancel</button><button className={`primary-button ${decision === 'reject' ? 'danger-button' : ''}`} type="submit" disabled={application.busyAction !== null || (decision === 'reject' && !comment.trim())}>{application.busyAction ?? (decision === 'approve' ? 'Approve request' : 'Reject request')}</button></div>
+        </form>
+      ) : (
+        <div className="form-actions"><button className="primary-button" type="button" onClick={onClose}>Close audit record</button></div>
+      )}
     </Modal>
   );
 }
@@ -94,8 +120,12 @@ function InviteDialog({ onClose }: { onClose: () => void }) {
 
   async function copyToken() {
     if (!created) return;
-    await navigator.clipboard.writeText(created.acceptanceToken);
-    setCopied(true);
+    try {
+      await navigator.clipboard.writeText(created.acceptanceToken);
+      setCopied(true);
+    } catch {
+      setCopied(false);
+    }
   }
 
   return (
