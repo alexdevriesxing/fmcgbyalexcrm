@@ -58,7 +58,7 @@ INSERT INTO permissions (key, display_name, description, risk_level, created_at)
   ('platform.invitations.manage', 'Manage invitations', 'Invite users, assign initial roles and revoke pending invitations.', 'high', CURRENT_TIMESTAMP)
 ON CONFLICT(key) DO NOTHING;
 
-INSERT INTO role_permissions (tenant_id, role_id, permission_key, created_at)
+INSERT OR IGNORE INTO role_permissions (tenant_id, role_id, permission_key, created_at)
 SELECT r.tenant_id, r.id, p.key, CURRENT_TIMESTAMP
 FROM roles r
 JOIN permissions p ON p.key IN (
@@ -68,20 +68,17 @@ JOIN permissions p ON p.key IN (
   'platform.roles.manage',
   'platform.invitations.manage'
 )
-WHERE r.key = 'tenant-admin'
-ON CONFLICT(tenant_id, role_id, permission_key) DO NOTHING;
+WHERE r.key = 'tenant-admin';
 
-INSERT INTO roles (id, tenant_id, key, display_name, is_system, created_at, updated_at)
+INSERT OR IGNORE INTO roles (id, tenant_id, key, display_name, is_system, created_at, updated_at)
 SELECT 'rol_operator_' || t.id, t.id, 'operator', 'Business Operator', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
-FROM tenants t
-ON CONFLICT(tenant_id, key) DO NOTHING;
+FROM tenants t;
 
-INSERT INTO roles (id, tenant_id, key, display_name, is_system, created_at, updated_at)
+INSERT OR IGNORE INTO roles (id, tenant_id, key, display_name, is_system, created_at, updated_at)
 SELECT 'rol_viewer_' || t.id, t.id, 'viewer', 'Read-only Viewer', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
-FROM tenants t
-ON CONFLICT(tenant_id, key) DO NOTHING;
+FROM tenants t;
 
-INSERT INTO role_permissions (tenant_id, role_id, permission_key, created_at)
+INSERT OR IGNORE INTO role_permissions (tenant_id, role_id, permission_key, created_at)
 SELECT r.tenant_id, r.id, p.key, CURRENT_TIMESTAMP
 FROM roles r
 JOIN permissions p ON p.key IN (
@@ -90,5 +87,4 @@ JOIN permissions p ON p.key IN (
   'platform.memberships.read',
   'platform.roles.read'
 )
-WHERE r.key IN ('operator', 'viewer')
-ON CONFLICT(tenant_id, role_id, permission_key) DO NOTHING;
+WHERE r.key IN ('operator', 'viewer');
