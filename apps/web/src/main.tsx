@@ -3,9 +3,11 @@ import { createRoot } from 'react-dom/client';
 import { App } from './App';
 import { ApplicationGate } from './components/ApplicationGate';
 import { ApplicationProvider } from './state/ApplicationProvider';
+import { CommercialProvider } from './state/CommercialProvider';
 import './styles.css';
 import './live.css';
 import './governance-live.css';
+import './commercial.css';
 
 const root = document.getElementById('root');
 
@@ -17,7 +19,9 @@ createRoot(root).render(
   <StrictMode>
     <ApplicationProvider>
       <ApplicationGate>
-        <App />
+        <CommercialProvider>
+          <App />
+        </CommercialProvider>
       </ApplicationGate>
     </ApplicationProvider>
   </StrictMode>
