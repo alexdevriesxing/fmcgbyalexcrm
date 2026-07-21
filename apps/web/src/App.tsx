@@ -1,4 +1,6 @@
 import type {
+  ApprovalPolicySummary,
+  ApprovalRequestSummary,
   InvitationSummary,
   MembershipSummary,
   ModuleEntitlement
@@ -73,7 +75,111 @@ const invitations: InvitationSummary[] = [
   }
 ];
 
+const approvalPolicy: ApprovalPolicySummary = {
+  id: 'pol_module_demo',
+  key: 'module-entitlement-change',
+  displayName: 'Module entitlement change',
+  resourceType: 'module-entitlement',
+  action: 'platform.module-entitlement.set',
+  condition: {},
+  enabled: true,
+  steps: [
+    {
+      stepNumber: 1,
+      requiredPermission: 'platform.modules.manage',
+      minimumApprovers: 1,
+      selfApprovalAllowed: false
+    }
+  ],
+  version: 1,
+  createdAt: '2026-07-21T09:00:00.000Z',
+  updatedAt: '2026-07-21T09:00:00.000Z'
+};
+
+const approvals: ApprovalRequestSummary[] = [
+  {
+    id: 'apr_finance',
+    policyKey: approvalPolicy.key,
+    policyDisplayName: approvalPolicy.displayName,
+    requesterUserId: 'usr_alex',
+    requesterDisplayName: 'Alex de Vries',
+    resourceType: 'module-entitlement',
+    resourceId: 'finance',
+    action: 'platform.module-entitlement.set',
+    title: 'Enable Finance for the Netherlands entity',
+    description: 'Unlock accounting, invoicing, receivables, payables and tax workflows.',
+    payload: { enabled: true, expectedVersion: 1 },
+    status: 'pending',
+    executionStatus: 'pending',
+    currentStepNumber: 1,
+    totalSteps: 1,
+    steps: [
+      {
+        stepNumber: 1,
+        requiredPermission: 'platform.modules.manage',
+        minimumApprovers: 1,
+        selfApprovalAllowed: false,
+        status: 'pending',
+        approvedCount: 0,
+        resolvedAt: null,
+        decisions: []
+      }
+    ],
+    expiresAt: '2026-07-28T13:00:00.000Z',
+    resolvedAt: null,
+    createdAt: '2026-07-21T13:00:00.000Z',
+    updatedAt: '2026-07-21T13:00:00.000Z',
+    version: 1
+  },
+  {
+    id: 'apr_marketing',
+    policyKey: approvalPolicy.key,
+    policyDisplayName: approvalPolicy.displayName,
+    requesterUserId: 'usr_sales',
+    requesterDisplayName: 'Commercial Manager',
+    resourceType: 'module-entitlement',
+    resourceId: 'marketing',
+    action: 'platform.module-entitlement.set',
+    title: 'Enable Marketing Campaigns',
+    description: 'Prepare audience, consent, journey and attribution workflows.',
+    payload: { enabled: true, expectedVersion: 1 },
+    status: 'approved',
+    executionStatus: 'completed',
+    currentStepNumber: 1,
+    totalSteps: 1,
+    steps: [
+      {
+        stepNumber: 1,
+        requiredPermission: 'platform.modules.manage',
+        minimumApprovers: 1,
+        selfApprovalAllowed: false,
+        status: 'approved',
+        approvedCount: 1,
+        resolvedAt: '2026-07-21T12:20:00.000Z',
+        decisions: [
+          {
+            id: 'apd_marketing',
+            stepNumber: 1,
+            deciderUserId: 'usr_alex',
+            deciderDisplayName: 'Alex de Vries',
+            decision: 'approve',
+            comment: 'Approved for the Q3 commercial rollout.',
+            createdAt: '2026-07-21T12:20:00.000Z'
+          }
+        ]
+      }
+    ],
+    expiresAt: '2026-07-28T12:00:00.000Z',
+    resolvedAt: '2026-07-21T12:20:00.000Z',
+    createdAt: '2026-07-21T12:00:00.000Z',
+    updatedAt: '2026-07-21T12:20:00.000Z',
+    version: 2
+  }
+];
+
 export function App() {
+  const pendingApprovals = approvals.filter((approval) => approval.status === 'pending');
+
   return (
     <div className="app-shell">
       <aside className="sidebar">
@@ -86,7 +192,7 @@ export function App() {
           <a className="nav-item active" href="#overview">Overview</a>
           <a className="nav-item" href="#modules">Modules</a>
           <a className="nav-item" href="#operations">Operations</a>
-          <a className="nav-item" href="#analytics">Analytics</a>
+          <a className="nav-item" href="#approvals">Approvals</a>
           <a className="nav-item" href="#admin">Administration</a>
         </nav>
 
@@ -119,7 +225,7 @@ export function App() {
 
         <section className="section-heading" id="modules">
           <div><span className="eyebrow">Capability launcher</span><h2>Business modules</h2></div>
-          <button className="ghost-button" type="button">Manage entitlements</button>
+          <button className="ghost-button" type="button">Request entitlement change</button>
         </section>
 
         <section className="module-grid">
@@ -146,6 +252,64 @@ export function App() {
             <div className="progress-row"><span>E-commerce</span><progress value="88" max="100">88%</progress></div>
             <div className="progress-row"><span>Campaign ROI</span><progress value="71" max="100">71%</progress></div>
           </article>
+        </section>
+
+        <section className="section-heading" id="approvals">
+          <div><span className="eyebrow">Maker-checker controls</span><h2>Approval inbox</h2></div>
+          <button className="primary-button" type="button">New approval request</button>
+        </section>
+
+        <section className="approval-summary" aria-label="Approval summary">
+          <article><span>Waiting for decision</span><strong>{pendingApprovals.length}</strong><small>Self-approval blocked</small></article>
+          <article><span>Active policies</span><strong>1</strong><small>{approvalPolicy.steps.length} sequential decision step</small></article>
+          <article><span>Completed today</span><strong>{approvals.filter((approval) => approval.status === 'approved').length}</strong><small>Actions executed atomically</small></article>
+          <article><span>Audit coverage</span><strong>100%</strong><small>Decision and execution events</small></article>
+        </section>
+
+        <section className="approval-layout">
+          <article className="approval-panel">
+            <div className="panel-heading"><div><span className="eyebrow">Decision queue</span><h3>Requests requiring review</h3></div><span className="secure-chip">Fail closed</span></div>
+            <div className="approval-list">
+              {approvals.map((approval) => {
+                const currentStep = approval.steps.find((step) => step.stepNumber === approval.currentStepNumber);
+                return (
+                  <div className="approval-card" key={approval.id}>
+                    <div className="approval-card-head">
+                      <div><span className="approval-resource">{approval.resourceType} · {approval.resourceId}</span><h4>{approval.title}</h4></div>
+                      <span className={`approval-status ${approval.status}`}>{approval.status}</span>
+                    </div>
+                    <p>{approval.description}</p>
+                    <div className="approval-meta">
+                      <span>Requested by <strong>{approval.requesterDisplayName}</strong></span>
+                      <span>Step {approval.currentStepNumber} of {approval.totalSteps}</span>
+                      <span>{currentStep?.approvedCount ?? 0}/{currentStep?.minimumApprovers ?? 1} approvals</span>
+                    </div>
+                    <div className="approval-progress" aria-label={`Approval progress for ${approval.title}`}>
+                      {approval.steps.map((step) => <span className={`approval-step ${step.status}`} key={step.stepNumber}>Step {step.stepNumber}</span>)}
+                    </div>
+                    {approval.status === 'pending' ? (
+                      <div className="approval-actions"><button className="text-button danger" type="button">Reject</button><button className="primary-button compact" type="button">Approve</button></div>
+                    ) : (
+                      <div className="execution-note"><strong>Execution {approval.executionStatus}</strong><span>{approval.steps[0]?.decisions[0]?.comment ?? 'Approved action completed.'}</span></div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </article>
+
+          <aside className="policy-panel">
+            <span className="eyebrow">Active policy</span>
+            <h3>{approvalPolicy.displayName}</h3>
+            <p>Direct module changes are blocked while this policy is enabled.</p>
+            <dl>
+              <div><dt>Action</dt><dd>{approvalPolicy.action}</dd></div>
+              <div><dt>Required permission</dt><dd>{approvalPolicy.steps[0]?.requiredPermission}</dd></div>
+              <div><dt>Minimum approvers</dt><dd>{approvalPolicy.steps[0]?.minimumApprovers}</dd></div>
+              <div><dt>Self approval</dt><dd>{approvalPolicy.steps[0]?.selfApprovalAllowed ? 'Allowed' : 'Blocked'}</dd></div>
+            </dl>
+            <button className="ghost-button" type="button">Configure policy</button>
+          </aside>
         </section>
 
         <section className="section-heading" id="admin">
