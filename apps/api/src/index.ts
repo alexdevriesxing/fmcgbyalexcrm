@@ -1,32 +1,26 @@
+import type {
+  DevelopmentBootstrapRequest,
+  HealthResponse,
+  ProblemDetails,
+  SetModuleEntitlementRequest
+} from '@fmcgbyalex/contracts';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { secureHeaders } from 'hono/secure-headers';
-import type {
-  HealthResponse,
-  ModuleEntitlement,
-  ProblemDetails
-} from '@fmcgbyalex/contracts';
+import {
+  PlatformHttpError,
+  bootstrapDevelopmentTenant,
+  enforceModule,
+  enforcePermission,
+  isPlatformHttpError,
+  resolveSession,
+  setModuleEntitlement,
+  type ApiVariables
+} from './platform';
 
-type Variables = {
-  correlationId: string;
-};
-
-const app = new Hono<{ Bindings: Env; Variables: Variables }>();
+const app = new Hono<{ Bindings: Env; Variables: ApiVariables }>();
 
 app.use('*', secureHeaders());
-
-app.use(
-  '/v1/*',
-  cors({
-    origin: 'http://localhost:5173',
-    allowHeaders: ['Content-Type', 'Authorization', 'Idempotency-Key'],
-    allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    exposeHeaders: ['X-Correlation-Id'],
-    credentials: true,
-    maxAge: 600
-  })
-);
-
 app.use('*', async (c, next) => {
   const incoming = c.req.header('X-Correlation-Id');
   const correlationId =
@@ -39,6 +33,30 @@ app.use('*', async (c, next) => {
   await next();
 });
 
+app.use(
+  '/v1/*',
+  cors({
+    origin: (origin, c) => {
+      const allowedOrigins = c.env.CORS_ORIGINS.split(',')
+        .map((value: string) => value.trim())
+        .filter(Boolean);
+      return allowedOrigins.includes(origin) ? origin : undefined;
+    },
+    allowHeaders: [
+      'Content-Type',
+      'Authorization',
+      'Idempotency-Key',
+      'X-Correlation-Id',
+      'X-Tenant-Id',
+      'X-Dev-Identity-Subject'
+    ],
+    allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    exposeHeaders: ['X-Correlation-Id'],
+    credentials: true,
+    maxAge: 600
+  })
+);
+
 app.get('/health', (c) => {
   const response: HealthResponse = {
     service: 'fmcgbyalex-api',
@@ -46,63 +64,93 @@ app.get('/health', (c) => {
     version: c.env.APP_VERSION,
     timestamp: new Date().toISOString()
   };
-
   return c.json(response);
 });
 
-const modules: ModuleEntitlement[] = [
-  {
-    key: 'platform',
-    enabled: true,
-    status: 'foundation',
-    label: 'Platform',
-    description: 'Tenants, security, workflow, audit and integrations'
-  },
-  {
-    key: 'inventory',
-    enabled: true,
-    status: 'foundation',
-    label: 'Inventory & WMS',
-    description: 'Lots, expiry, aging, stock ledger and warehouse execution'
-  },
-  {
-    key: 'sales',
-    enabled: true,
-    status: 'foundation',
-    label: 'Sales',
-    description: 'Quotes, orders, pricing, allocation and returns'
-  },
-  {
-    key: 'finance',
-    enabled: true,
-    status: 'planned',
-    label: 'Finance',
-    description: 'Accounting, invoicing, AR, AP and reconciliation'
-  },
-  {
-    key: 'crm',
-    enabled: true,
-    status: 'foundation',
-    label: 'CRM',
-    description: 'Accounts, contacts, pipeline, activity and service'
-  },
-  {
-    key: 'ecommerce',
-    enabled: true,
-    status: 'planned',
-    label: 'E-commerce',
-    description: 'B2B portal, D2C and marketplace orchestration'
-  },
-  {
-    key: 'marketing',
-    enabled: true,
-    status: 'planned',
-    label: 'Marketing',
-    description: 'Campaigns, segments, journeys, attribution and ROI'
-  }
-];
+app.post('/v1/development/bootstrap', async (c) => {
+  const input = await readJson<DevelopmentBootstrapRequest>(c.req.raw);
+  const response = await bootstrapDevelopmentTenant(
+    c.env,
+    c.req.raw,
+    c.get('correlationId'),
+    input
+  );
+  return c.json(response, 201);
+});
 
-app.get('/v1/modules', (c) => c.json({ data: modules }));
+app.use('/v1/*', async (c, next) => {
+  if (c.req.path === '/v1/development/bootstrap') {
+    await next();
+    return;
+  }
+
+  const session = await resolveSession(
+    c.env,
+    c.req.raw,
+    c.get('correlationId')
+  );
+  c.set('session', session);
+  await next();
+});
+
+app.get('/v1/session', async (c) => {
+  const session = c.get('session');
+  await enforceModule(
+    c.env.CONTROL_DB,
+    c.req.raw,
+    session,
+    'platform',
+    'platform.session.read'
+  );
+  await enforcePermission(
+    c.env.CONTROL_DB,
+    c.req.raw,
+    session,
+    'platform.session.read',
+    'platform.session.read'
+  );
+  return c.json(session.response);
+});
+
+app.get('/v1/modules', async (c) => {
+  const session = c.get('session');
+  await enforceModule(
+    c.env.CONTROL_DB,
+    c.req.raw,
+    session,
+    'platform',
+    'platform.modules.read'
+  );
+  await enforcePermission(
+    c.env.CONTROL_DB,
+    c.req.raw,
+    session,
+    'platform.modules.read',
+    'platform.modules.read'
+  );
+  return c.json({ data: session.response.modules });
+});
+
+app.patch('/v1/admin/modules/:moduleKey', async (c) => {
+  const input = await readJson<SetModuleEntitlementRequest>(c.req.raw);
+  if (typeof input.enabled !== 'boolean') {
+    throw new PlatformHttpError({
+      status: 400,
+      type: 'https://fmcgbyalex.com/problems/validation-error',
+      title: 'Request validation failed',
+      detail: 'enabled must be a boolean.'
+    });
+  }
+
+  const response = await setModuleEntitlement(
+    c.env,
+    c.req.raw,
+    c.get('session'),
+    c.req.param('moduleKey'),
+    input.enabled
+  );
+  return c.json(response);
+});
 
 app.notFound((c) => {
   const problem: ProblemDetails = {
@@ -112,7 +160,6 @@ app.notFound((c) => {
     instance: c.req.path,
     correlationId: c.get('correlationId')
   };
-
   return c.json(problem, 404);
 });
 
@@ -124,14 +171,50 @@ app.onError((error, c) => {
     errorName: error.name
   });
 
+  if (isPlatformHttpError(error)) {
+    const problem: ProblemDetails = {
+      type: error.type,
+      title: error.title,
+      status: error.status,
+      correlationId: c.get('correlationId')
+    };
+    if (error.detail !== undefined) {
+      problem.detail = error.detail;
+    }
+    return c.json(
+      problem,
+      error.status as 400 | 401 | 403 | 404 | 409 | 415 | 503
+    );
+  }
+
   const problem: ProblemDetails = {
     type: 'https://fmcgbyalex.com/problems/internal-error',
     title: 'Unexpected server error',
     status: 500,
     correlationId: c.get('correlationId')
   };
-
   return c.json(problem, 500);
 });
+
+async function readJson<T>(request: Request): Promise<T> {
+  const contentType = request.headers.get('Content-Type') ?? '';
+  if (!contentType.toLowerCase().startsWith('application/json')) {
+    throw new PlatformHttpError({
+      status: 415,
+      type: 'https://fmcgbyalex.com/problems/unsupported-media-type',
+      title: 'Content-Type must be application/json'
+    });
+  }
+
+  try {
+    return (await request.json()) as T;
+  } catch {
+    throw new PlatformHttpError({
+      status: 400,
+      type: 'https://fmcgbyalex.com/problems/invalid-json',
+      title: 'Request body is not valid JSON'
+    });
+  }
+}
 
 export default app;
