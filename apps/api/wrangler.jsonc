@@ -6,7 +6,10 @@
   "compatibility_flags": ["nodejs_compat"],
   "vars": {
     "ENVIRONMENT": "development",
-    "APP_VERSION": "0.1.0"
+    "APP_VERSION": "0.2.0",
+    "AUTH_MODE": "development",
+    "CORS_ORIGINS": "http://localhost:5173",
+    "DEVELOPMENT_IDENTITY_SUBJECT": "local-admin"
   },
   "d1_databases": [
     {

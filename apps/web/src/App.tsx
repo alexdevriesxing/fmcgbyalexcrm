@@ -1,20 +1,20 @@
 import type { ModuleEntitlement } from '@fmcgbyalex/contracts';
 
 const modules: ModuleEntitlement[] = [
-  { key: 'platform', enabled: true, status: 'foundation', label: 'Platform & Admin', description: 'Tenants, users, roles, workflow, files and audit' },
-  { key: 'procurement', enabled: true, status: 'planned', label: 'Procurement', description: 'Sourcing, suppliers, purchase orders and inbound' },
-  { key: 'production', enabled: true, status: 'planned', label: 'Production', description: 'MRP, recipes, scheduling, quality and maintenance' },
-  { key: 'workforce', enabled: true, status: 'planned', label: 'Workforce', description: 'Shifts, skills, attendance, labor and training' },
-  { key: 'inventory', enabled: true, status: 'foundation', label: 'Inventory & WMS', description: 'Lots, expiry, aging, FEFO, counts and dispatch' },
-  { key: 'sales', enabled: true, status: 'foundation', label: 'Sales', description: 'Pricing, quotations, orders, delivery and returns' },
-  { key: 'finance', enabled: true, status: 'planned', label: 'Finance', description: 'Accounting, invoicing, AR, AP, tax and cash' },
-  { key: 'crm', enabled: true, status: 'foundation', label: 'CRM', description: 'Accounts, contacts, activities, pipeline and service' },
-  { key: 'geospatial', enabled: true, status: 'planned', label: 'Routes & Zones', description: 'Territories, maps, routing, field visits and proof' },
-  { key: 'distributors', enabled: true, status: 'planned', label: 'Distribution', description: 'Distributors, retailers, sell-out and coverage' },
-  { key: 'trade-terms', enabled: true, status: 'planned', label: 'Trade Terms', description: 'Agreements, rebates, claims, accruals and settlement' },
-  { key: 'ecommerce', enabled: true, status: 'planned', label: 'E-commerce', description: 'B2B ordering, D2C, marketplaces and subscriptions' },
-  { key: 'marketing', enabled: true, status: 'planned', label: 'Marketing', description: 'Campaigns, segments, journeys, consent and ROI' },
-  { key: 'analytics', enabled: true, status: 'planned', label: 'Planning & Analytics', description: 'Dashboards, forecasts, S&OP and scenarios' }
+  { key: 'platform', enabled: true, status: 'foundation', label: 'Platform & Admin', description: 'Tenants, users, roles, workflow, files and audit', version: 1 },
+  { key: 'procurement', enabled: true, status: 'planned', label: 'Procurement', description: 'Sourcing, suppliers, purchase orders and inbound', version: 1 },
+  { key: 'production', enabled: true, status: 'planned', label: 'Production', description: 'MRP, recipes, scheduling, quality and maintenance', version: 1 },
+  { key: 'workforce', enabled: true, status: 'planned', label: 'Workforce', description: 'Shifts, skills, attendance, labor and training', version: 1 },
+  { key: 'inventory', enabled: true, status: 'foundation', label: 'Inventory & WMS', description: 'Lots, expiry, aging, FEFO, counts and dispatch', version: 1 },
+  { key: 'sales', enabled: true, status: 'foundation', label: 'Sales', description: 'Pricing, quotations, orders, delivery and returns', version: 1 },
+  { key: 'finance', enabled: true, status: 'planned', label: 'Finance', description: 'Accounting, invoicing, AR, AP, tax and cash', version: 1 },
+  { key: 'crm', enabled: true, status: 'foundation', label: 'CRM', description: 'Accounts, contacts, activities, pipeline and service', version: 1 },
+  { key: 'geospatial', enabled: true, status: 'planned', label: 'Routes & Zones', description: 'Territories, maps, routing, field visits and proof', version: 1 },
+  { key: 'distributors', enabled: true, status: 'planned', label: 'Distribution', description: 'Distributors, retailers, sell-out and coverage', version: 1 },
+  { key: 'trade-terms', enabled: true, status: 'planned', label: 'Trade Terms', description: 'Agreements, rebates, claims, accruals and settlement', version: 1 },
+  { key: 'ecommerce', enabled: true, status: 'planned', label: 'E-commerce', description: 'B2B ordering, D2C, marketplaces and subscriptions', version: 1 },
+  { key: 'marketing', enabled: true, status: 'planned', label: 'Marketing', description: 'Campaigns, segments, journeys, consent and ROI', version: 1 },
+  { key: 'analytics', enabled: true, status: 'planned', label: 'Planning & Analytics', description: 'Dashboards, forecasts, S&OP and scenarios', version: 1 }
 ];
 
 const kpis = [
