@@ -14,7 +14,7 @@ const baseEnvironment = {
   CF_D1_DATABASE_ID: '11111111-1111-4111-8111-111111111111',
   CF_TENANT_D1_DATABASE_NAME: 'fmcgbyalex-tenant-staging',
   CF_TENANT_D1_DATABASE_ID: '22222222-2222-4222-8222-222222222222',
-  CF_KV_NAMESPACE_ID: '11111111111111111111111111111111',
+  CF_KV_NAMESPACE_ID: '1a2b3c4d5e6f708192a3b4c5d6e7f809',
   CF_R2_BUCKET_NAME: 'fmcgbyalex-documents-staging',
   CF_OUTBOX_QUEUE_NAME: 'fmcgbyalex-outbox-staging',
   CF_OUTBOX_DLQ_NAME: 'fmcgbyalex-outbox-dlq-staging',
