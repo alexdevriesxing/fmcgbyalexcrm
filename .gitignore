@@ -1,0 +1,15 @@
+node_modules
+dist
+coverage
+.wrangler
+.dev.vars
+.env
+.env.*
+!.env.example
+.DS_Store
+*.log
+*.sqlite
+*.sqlite3
+apps/desktop/src-tauri/target
+apps/mobile/android
+apps/mobile/ios
