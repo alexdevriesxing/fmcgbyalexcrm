@@ -32,6 +32,11 @@ export const PLATFORM_PERMISSIONS = [
   'platform.roles.read',
   'platform.roles.manage',
   'platform.invitations.manage',
+  'platform.approvals.read',
+  'platform.approvals.request',
+  'platform.approvals.decide',
+  'platform.approval-policies.read',
+  'platform.approval-policies.manage',
   'platform.audit.read'
 ] as const;
 
@@ -184,6 +189,131 @@ export type UpdateMembershipResponse = {
 
 export type RevokeInvitationResponse = {
   invitation: InvitationSummary;
+  replayed: boolean;
+};
+
+export type ApprovalRequestStatus =
+  | 'pending'
+  | 'approved'
+  | 'rejected'
+  | 'cancelled'
+  | 'expired';
+
+export type ApprovalStepStatus = 'pending' | 'approved' | 'rejected';
+export type ApprovalDecisionValue = 'approve' | 'reject';
+
+export type ApprovalPolicyStep = {
+  stepNumber: number;
+  requiredPermission: string;
+  minimumApprovers: number;
+  selfApprovalAllowed: boolean;
+};
+
+export type ApprovalPolicySummary = {
+  id: string;
+  key: string;
+  displayName: string;
+  resourceType: string;
+  action: string;
+  condition: Record<string, unknown>;
+  enabled: boolean;
+  steps: ApprovalPolicyStep[];
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ApprovalDecisionSummary = {
+  id: string;
+  stepNumber: number;
+  deciderUserId: string;
+  deciderDisplayName: string;
+  decision: ApprovalDecisionValue;
+  comment: string | null;
+  createdAt: string;
+};
+
+export type ApprovalRequestStepSummary = ApprovalPolicyStep & {
+  status: ApprovalStepStatus;
+  approvedCount: number;
+  resolvedAt: string | null;
+  decisions: ApprovalDecisionSummary[];
+};
+
+export type ApprovalRequestSummary = {
+  id: string;
+  policyKey: string;
+  policyDisplayName: string;
+  requesterUserId: string;
+  requesterDisplayName: string;
+  resourceType: string;
+  resourceId: string;
+  action: string;
+  title: string;
+  description: string | null;
+  payload: Record<string, unknown>;
+  status: ApprovalRequestStatus;
+  executionStatus: 'pending' | 'completed' | 'not-required' | 'failed';
+  currentStepNumber: number;
+  totalSteps: number;
+  steps: ApprovalRequestStepSummary[];
+  expiresAt: string;
+  resolvedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  version: number;
+};
+
+export type ApprovalWorkspaceResponse = {
+  policies: ApprovalPolicySummary[];
+  requests: ApprovalRequestSummary[];
+};
+
+export type UpsertApprovalPolicyRequest = {
+  displayName: string;
+  resourceType: string;
+  action: string;
+  condition?: Record<string, unknown>;
+  enabled: boolean;
+  steps: Array<{
+    requiredPermission: string;
+    minimumApprovers: number;
+    selfApprovalAllowed: boolean;
+  }>;
+};
+
+export type UpsertApprovalPolicyResponse = {
+  policy: ApprovalPolicySummary;
+  replayed: boolean;
+};
+
+export type CreateApprovalRequestRequest = {
+  policyKey: string;
+  resourceType: string;
+  resourceId: string;
+  action: string;
+  title: string;
+  description?: string;
+  payload: Record<string, unknown>;
+};
+
+export type CreateApprovalRequestResponse = {
+  request: ApprovalRequestSummary;
+  replayed: boolean;
+};
+
+export type DecideApprovalRequestRequest = {
+  decision: ApprovalDecisionValue;
+  comment?: string;
+};
+
+export type DecideApprovalRequestResponse = {
+  request: ApprovalRequestSummary;
+  replayed: boolean;
+};
+
+export type CancelApprovalRequestResponse = {
+  request: ApprovalRequestSummary;
   replayed: boolean;
 };
 
