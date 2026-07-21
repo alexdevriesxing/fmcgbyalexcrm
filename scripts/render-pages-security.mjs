@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 
 const apiBaseUrl = requiredHttpsUrl('CF_API_BASE_URL');
 const webBaseUrl = requiredHttpsUrl('CF_WEB_BASE_URL');
+const environment = requiredEnvironment('CF_ENVIRONMENT');
 const outputDir = resolve(process.env.CF_WEB_DIST || 'apps/web/dist');
 const apiOrigin = new URL(apiBaseUrl).origin;
 const webOrigin = new URL(webBaseUrl).origin;
@@ -20,12 +21,20 @@ const headers = `/*
 /index.html
   Cache-Control: no-store
 
+/runtime-config.js
+  Cache-Control: no-store
+
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 `;
 
 const redirects = '/* /index.html 200\n';
-const runtime = `window.__FMCGBYALEX_RUNTIME__ = ${JSON.stringify({ apiBaseUrl, webBaseUrl: webOrigin })};\n`;
+const runtime = `window.__FMCGBYALEX_RUNTIME__ = ${JSON.stringify({
+  apiBaseUrl,
+  webBaseUrl: webOrigin,
+  environment,
+  authenticationMode: 'oidc'
+})};\n`;
 
 await mkdir(outputDir, { recursive: true });
 await Promise.all([
@@ -48,6 +57,14 @@ function requiredHttpsUrl(name) {
     fail(`${name} must be an HTTPS URL without credentials or fragments.`);
   }
   return value.replace(/\/$/, '');
+}
+
+function requiredEnvironment(name) {
+  const value = process.env[name]?.trim();
+  if (!value || !['development', 'staging', 'production'].includes(value)) {
+    fail(`${name} must be development, staging or production.`);
+  }
+  return value;
 }
 
 function fail(message) {
