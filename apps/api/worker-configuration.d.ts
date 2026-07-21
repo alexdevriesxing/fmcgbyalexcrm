@@ -9,8 +9,10 @@ interface Env {
   OIDC_JWKS_URI: string;
   OIDC_ALGORITHMS: string;
   SELF_SERVICE_ONBOARDING: 'enabled' | 'disabled';
+  OUTBOX_DLQ_NAME?: string;
   INVITATION_ENCRYPTION_KEY: string;
   CONTROL_DB: D1Database;
   CONFIG: KVNamespace;
   DOCUMENTS: R2Bucket;
+  OUTBOX_QUEUE?: Queue;
 }
