@@ -58,3 +58,59 @@ JOIN permissions p ON p.key IN (
   'inventory.stock.read'
 )
 WHERE r.key = 'viewer';
+
+CREATE TRIGGER roles_grant_tenant_admin_domain_permissions
+AFTER INSERT ON roles
+WHEN NEW.key = 'tenant-admin'
+BEGIN
+  INSERT OR IGNORE INTO role_permissions (tenant_id, role_id, permission_key, created_at)
+  SELECT NEW.tenant_id, NEW.id, p.key, CURRENT_TIMESTAMP
+  FROM permissions p
+  WHERE p.key IN (
+    'master-data.catalog.read',
+    'master-data.catalog.manage',
+    'master-data.locations.read',
+    'master-data.locations.manage',
+    'master-data.parties.read',
+    'master-data.parties.manage',
+    'inventory.stock.read',
+    'inventory.stock.receive',
+    'inventory.stock.adjust',
+    'inventory.stock.transfer',
+    'inventory.stock.quarantine',
+    'inventory.settings.manage'
+  );
+END;
+
+CREATE TRIGGER roles_grant_operator_domain_permissions
+AFTER INSERT ON roles
+WHEN NEW.key = 'operator'
+BEGIN
+  INSERT OR IGNORE INTO role_permissions (tenant_id, role_id, permission_key, created_at)
+  SELECT NEW.tenant_id, NEW.id, p.key, CURRENT_TIMESTAMP
+  FROM permissions p
+  WHERE p.key IN (
+    'master-data.catalog.read',
+    'master-data.locations.read',
+    'master-data.parties.read',
+    'inventory.stock.read',
+    'inventory.stock.receive',
+    'inventory.stock.transfer',
+    'inventory.stock.quarantine'
+  );
+END;
+
+CREATE TRIGGER roles_grant_viewer_domain_permissions
+AFTER INSERT ON roles
+WHEN NEW.key = 'viewer'
+BEGIN
+  INSERT OR IGNORE INTO role_permissions (tenant_id, role_id, permission_key, created_at)
+  SELECT NEW.tenant_id, NEW.id, p.key, CURRENT_TIMESTAMP
+  FROM permissions p
+  WHERE p.key IN (
+    'master-data.catalog.read',
+    'master-data.locations.read',
+    'master-data.parties.read',
+    'inventory.stock.read'
+  );
+END;
