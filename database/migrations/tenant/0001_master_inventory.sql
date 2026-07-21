@@ -244,7 +244,7 @@ CREATE TABLE inventory_balances (
   bin_id TEXT NOT NULL,
   lot_id TEXT NOT NULL,
   inventory_status TEXT NOT NULL CHECK (inventory_status IN ('available', 'quarantine', 'damaged', 'blocked')),
-  quantity_base INTEGER NOT NULL DEFAULT 0 CHECK (quantity_base >= 0),
+  quantity_base INTEGER NOT NULL DEFAULT 0,
   updated_at TEXT NOT NULL,
   version INTEGER NOT NULL DEFAULT 1 CHECK (version > 0),
   PRIMARY KEY (tenant_id, variant_id, warehouse_id, bin_id, lot_id, inventory_status),
@@ -258,6 +258,29 @@ CREATE INDEX inventory_balances_warehouse_idx
   ON inventory_balances(tenant_id, warehouse_id, inventory_status, variant_id);
 CREATE INDEX inventory_balances_lot_idx
   ON inventory_balances(tenant_id, lot_id, inventory_status);
+
+CREATE TRIGGER inventory_balances_prevent_negative_insert
+BEFORE INSERT ON inventory_balances
+WHEN NEW.quantity_base < 0
+  AND NOT EXISTS (
+    SELECT 1 FROM inventory_balances existing
+    WHERE existing.tenant_id = NEW.tenant_id
+      AND existing.variant_id = NEW.variant_id
+      AND existing.warehouse_id = NEW.warehouse_id
+      AND existing.bin_id = NEW.bin_id
+      AND existing.lot_id = NEW.lot_id
+      AND existing.inventory_status = NEW.inventory_status
+  )
+BEGIN
+  SELECT RAISE(ABORT, 'inventory_negative_stock');
+END;
+
+CREATE TRIGGER inventory_balances_prevent_negative_update
+BEFORE UPDATE OF quantity_base ON inventory_balances
+WHEN NEW.quantity_base < 0
+BEGIN
+  SELECT RAISE(ABORT, 'inventory_negative_stock');
+END;
 
 CREATE TABLE inventory_movements (
   id TEXT PRIMARY KEY,
