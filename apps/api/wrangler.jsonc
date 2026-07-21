@@ -6,10 +6,14 @@
   "compatibility_flags": ["nodejs_compat"],
   "vars": {
     "ENVIRONMENT": "development",
-    "APP_VERSION": "0.2.0",
+    "APP_VERSION": "0.3.0",
     "AUTH_MODE": "development",
     "CORS_ORIGINS": "http://localhost:5173",
-    "DEVELOPMENT_IDENTITY_SUBJECT": "local-admin"
+    "DEVELOPMENT_IDENTITY_SUBJECT": "local-admin",
+    "OIDC_ISSUER": "https://identity.invalid",
+    "OIDC_AUDIENCE": "fmcgbyalex-api",
+    "OIDC_JWKS_URI": "https://identity.invalid/.well-known/jwks.json",
+    "OIDC_ALGORITHMS": "RS256,PS256,ES256,EdDSA"
   },
   "d1_databases": [
     {
