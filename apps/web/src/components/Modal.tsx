@@ -11,10 +11,10 @@ export function Modal({
 }: PropsWithChildren<{
   eyebrow: string;
   title: string;
-  description?: string;
+  description?: string | undefined;
   onClose: () => void;
-  footer?: ReactNode;
-  width?: 'standard' | 'wide';
+  footer?: ReactNode | undefined;
+  width?: 'standard' | 'wide' | undefined;
 }>) {
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
@@ -53,7 +53,7 @@ export function Modal({
   );
 }
 
-export function EmptyState({ title, detail, action }: { title: string; detail: string; action?: ReactNode }) {
+export function EmptyState({ title, detail, action }: { title: string; detail: string; action?: ReactNode | undefined }) {
   return (
     <div className="empty-state">
       <span className="empty-state-icon" aria-hidden="true">◇</span>
@@ -64,6 +64,6 @@ export function EmptyState({ title, detail, action }: { title: string; detail: s
   );
 }
 
-export function InlineLoading({ label = 'Loading live data' }: { label?: string }) {
+export function InlineLoading({ label = 'Loading live data' }: { label?: string | undefined }) {
   return <div className="inline-loading" aria-live="polite"><span className="loading-spinner" aria-hidden="true" />{label}</div>;
 }
