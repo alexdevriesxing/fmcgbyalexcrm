@@ -11,8 +11,11 @@ export default defineConfig({
       wrangler: { configPath: './wrangler.jsonc' },
       miniflare: {
         bindings: {
-          TEST_MIGRATIONS: await readD1Migrations(
+          TEST_CONTROL_MIGRATIONS: await readD1Migrations(
             path.resolve('../../database/migrations/control')
+          ),
+          TEST_TENANT_MIGRATIONS: await readD1Migrations(
+            path.resolve('../../database/migrations/tenant')
           )
         }
       }
@@ -20,6 +23,6 @@ export default defineConfig({
   ],
   test: {
     setupFiles: ['./test/setup.ts'],
-    testTimeout: 15_000
+    testTimeout: 20_000
   }
 });
