@@ -125,3 +125,38 @@ SELECT
   0
 FROM approval_policies p
 WHERE p.key = 'module-entitlement-change';
+
+CREATE TRIGGER tenant_default_approval_policy_after_insert
+AFTER INSERT ON tenants
+BEGIN
+  INSERT OR IGNORE INTO approval_policies (
+    id, tenant_id, key, display_name, resource_type, action,
+    condition_json, enabled, created_at, updated_at, version
+  ) VALUES (
+    'pol_module_' || NEW.id,
+    NEW.id,
+    'module-entitlement-change',
+    'Module entitlement change',
+    'module-entitlement',
+    'platform.module-entitlement.set',
+    '{}',
+    1,
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP,
+    1
+  );
+
+  INSERT OR IGNORE INTO approval_policy_steps (
+    policy_id, step_number, required_permission,
+    minimum_approvers, self_approval_allowed
+  )
+  SELECT
+    p.id,
+    1,
+    'platform.modules.manage',
+    1,
+    0
+  FROM approval_policies p
+  WHERE p.tenant_id = NEW.id
+    AND p.key = 'module-entitlement-change';
+END;
