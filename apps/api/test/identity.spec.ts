@@ -1,31 +1,22 @@
-import { fetchMock } from 'cloudflare:test';
 import {
   SignJWT,
   exportJWK,
   generateKeyPair
 } from 'jose';
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   clearIdentityCachesForTests,
   resolveAuthenticatedIdentity
 } from '../src/identity';
-import { PlatformHttpError } from '../src/platform';
 
 const issuer = 'https://identity.example';
 const audience = 'fmcgbyalex-api';
 const jwksUri = `${issuer}/.well-known/jwks.json`;
 
-beforeAll(() => {
-  fetchMock.activate();
-  fetchMock.disableNetConnect();
-});
-
 afterEach(() => {
-  fetchMock.assertNoPendingInterceptors();
+  vi.restoreAllMocks();
   clearIdentityCachesForTests();
 });
-
-afterAll(() => fetchMock.deactivate());
 
 describe('OIDC identity verification', () => {
   it('accepts a signed token and rejects the same token for another audience', async () => {
@@ -33,12 +24,12 @@ describe('OIDC identity verification', () => {
     const publicJwk = await exportJWK(publicKey);
     Object.assign(publicJwk, { kid: 'test-key', alg: 'RS256', use: 'sig' });
 
-    fetchMock
-      .get(issuer)
-      .intercept({ path: '/.well-known/jwks.json', method: 'GET' })
-      .reply(200, JSON.stringify({ keys: [publicJwk] }), {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response(JSON.stringify({ keys: [publicJwk] }), {
+        status: 200,
         headers: { 'Content-Type': 'application/json' }
-      });
+      })
+    );
 
     const token = await new SignJWT({ scope: 'platform.session.read' })
       .setProtectedHeader({ alg: 'RS256', kid: 'test-key' })
@@ -57,6 +48,7 @@ describe('OIDC identity verification', () => {
     );
 
     expect(identity).toEqual({ subject: 'oidc|alex', mode: 'oidc' });
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
 
     await expect(
       resolveAuthenticatedIdentity(
@@ -65,7 +57,7 @@ describe('OIDC identity verification', () => {
         }),
         oidcEnv({ OIDC_AUDIENCE: 'another-api' })
       )
-    ).rejects.toMatchObject<Partial<PlatformHttpError>>({ status: 401 });
+    ).rejects.toMatchObject({ status: 401 });
   });
 
   it('requires an exact bearer authorization header', async () => {
@@ -74,7 +66,7 @@ describe('OIDC identity verification', () => {
         new Request('https://api.example/v1/session'),
         oidcEnv()
       )
-    ).rejects.toMatchObject<Partial<PlatformHttpError>>({ status: 401 });
+    ).rejects.toMatchObject({ status: 401 });
   });
 
   it('rejects symmetric or unknown signing algorithms in configuration', async () => {
@@ -85,7 +77,7 @@ describe('OIDC identity verification', () => {
         }),
         oidcEnv({ OIDC_ALGORITHMS: 'HS256' })
       )
-    ).rejects.toMatchObject<Partial<PlatformHttpError>>({ status: 503 });
+    ).rejects.toMatchObject({ status: 503 });
   });
 });
 
