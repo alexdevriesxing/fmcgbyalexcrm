@@ -34,10 +34,30 @@ jobs:
         run: pnpm install --frozen-lockfile=false
 
       - name: Typecheck
-        run: pnpm typecheck
+        run: |
+          set -o pipefail
+          pnpm typecheck 2>&1 | tee typecheck.log
+
+      - name: Upload typecheck diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: typecheck-diagnostics
+          path: typecheck.log
+          retention-days: 7
 
       - name: Test
-        run: pnpm test
+        run: |
+          set -o pipefail
+          pnpm test 2>&1 | tee test.log
+
+      - name: Upload test diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-diagnostics
+          path: test.log
+          retention-days: 7
 
       - name: Build
         run: pnpm build
