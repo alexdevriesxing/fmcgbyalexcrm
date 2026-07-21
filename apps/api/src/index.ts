@@ -1,12 +1,15 @@
 import type {
   AcceptInvitationRequest,
+  CreateApprovalRequestRequest,
   CreateInvitationRequest,
+  DecideApprovalRequestRequest,
   DevelopmentBootstrapRequest,
   HealthResponse,
   OnboardTenantRequest,
   ProblemDetails,
   SetModuleEntitlementRequest,
-  UpdateMembershipRequest
+  UpdateMembershipRequest,
+  UpsertApprovalPolicyRequest
 } from '@fmcgbyalex/contracts';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
@@ -20,6 +23,15 @@ import {
   revokeInvitation,
   updateMembership
 } from './administration';
+import {
+  cancelApprovalRequest,
+  createApprovalRequest,
+  decideApprovalRequest,
+  getApprovalRequest,
+  getApprovalWorkspace,
+  requireDirectModuleChangeAllowed,
+  upsertApprovalPolicy
+} from './approvals';
 import { resolveAuthenticatedSession } from './identity';
 import {
   PlatformHttpError,
@@ -190,6 +202,7 @@ app.patch('/v1/admin/modules/:moduleKey', async (c) => {
     });
   }
 
+  await requireDirectModuleChangeAllowed(c.env, c.get('session'));
   const response = await setModuleEntitlement(
     c.env,
     c.req.raw,
@@ -198,6 +211,71 @@ app.patch('/v1/admin/modules/:moduleKey', async (c) => {
     input.enabled
   );
   return c.json(response);
+});
+
+app.get('/v1/approvals', async (c) => {
+  return c.json(
+    await getApprovalWorkspace(c.env, c.req.raw, c.get('session'))
+  );
+});
+
+app.get('/v1/approvals/:requestId', async (c) => {
+  return c.json(
+    await getApprovalRequest(
+      c.env,
+      c.req.raw,
+      c.get('session'),
+      c.req.param('requestId')
+    )
+  );
+});
+
+app.post('/v1/approvals', async (c) => {
+  const input = await readJson<CreateApprovalRequestRequest>(c.req.raw);
+  const response = await createApprovalRequest(
+    c.env,
+    c.req.raw,
+    c.get('session'),
+    input
+  );
+  return c.json(response, response.replayed ? 200 : 201);
+});
+
+app.post('/v1/approvals/:requestId/decisions', async (c) => {
+  const input = await readJson<DecideApprovalRequestRequest>(c.req.raw);
+  return c.json(
+    await decideApprovalRequest(
+      c.env,
+      c.req.raw,
+      c.get('session'),
+      c.req.param('requestId'),
+      input
+    )
+  );
+});
+
+app.post('/v1/approvals/:requestId/cancel', async (c) => {
+  return c.json(
+    await cancelApprovalRequest(
+      c.env,
+      c.req.raw,
+      c.get('session'),
+      c.req.param('requestId')
+    )
+  );
+});
+
+app.put('/v1/admin/approval-policies/:policyKey', async (c) => {
+  const input = await readJson<UpsertApprovalPolicyRequest>(c.req.raw);
+  return c.json(
+    await upsertApprovalPolicy(
+      c.env,
+      c.req.raw,
+      c.get('session'),
+      c.req.param('policyKey'),
+      input
+    )
+  );
 });
 
 app.get('/v1/admin/access', async (c) => {
