@@ -5,6 +5,7 @@ import { ApplicationGate } from './components/ApplicationGate';
 import { ApplicationProvider } from './state/ApplicationProvider';
 import './styles.css';
 import './live.css';
+import './governance-live.css';
 
 const root = document.getElementById('root');
 
