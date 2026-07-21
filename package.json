@@ -1,6 +1,6 @@
 {
   "name": "fmcgbyalex-superapp",
-  "version": "0.1.0",
+  "version": "0.5.0",
   "private": true,
   "packageManager": "pnpm@10.13.1",
   "engines": {
@@ -11,7 +11,11 @@
     "dev": "pnpm -r --parallel dev",
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck",
-    "test": "pnpm -r test",
+    "test": "pnpm -r test && node --test scripts/*.test.mjs",
+    "test:infrastructure": "node --test scripts/*.test.mjs",
+    "cloudflare:render": "node scripts/render-cloudflare-config.mjs",
+    "cloudflare:pages-security": "node scripts/render-pages-security.mjs",
+    "cloudflare:smoke": "node scripts/cloudflare-smoke.mjs",
     "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build"
   }
 }
