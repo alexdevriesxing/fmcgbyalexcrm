@@ -1,0 +1,31 @@
+{
+  "githubEnvironment": "staging",
+  "secrets": {
+    "CLOUDFLARE_ACCOUNT_ID": "set-in-github-environment",
+    "CLOUDFLARE_API_TOKEN": "set-in-github-environment",
+    "INVITATION_ENCRYPTION_KEY": "base64-encoded-32-byte-key",
+    "CF_SMOKE_BEARER_TOKEN": "optional-oidc-token",
+    "CF_SMOKE_TENANT_ID": "optional-tenant-id"
+  },
+  "variables": {
+    "CF_WORKER_NAME": "fmcgbyalex-api-staging",
+    "CF_PAGES_PROJECT_NAME": "fmcgbyalex-web-staging",
+    "CF_D1_DATABASE_NAME": "fmcgbyalex-control-staging",
+    "CF_D1_DATABASE_ID": "real-d1-uuid",
+    "CF_KV_NAMESPACE_ID": "real-32-character-kv-id",
+    "CF_R2_BUCKET_NAME": "fmcgbyalex-documents-staging",
+    "CF_OUTBOX_QUEUE_NAME": "fmcgbyalex-outbox-staging",
+    "CF_OUTBOX_DLQ_NAME": "fmcgbyalex-outbox-dlq-staging",
+    "CF_CORS_ORIGINS": "https://staging.fmcgbyalex.com",
+    "CF_OIDC_ISSUER": "https://identity.your-company.com",
+    "CF_OIDC_AUDIENCE": "fmcgbyalex-api-staging",
+    "CF_OIDC_JWKS_URI": "https://identity.your-company.com/.well-known/jwks.json",
+    "CF_OIDC_ALGORITHMS": "RS256,PS256,ES256,EdDSA",
+    "CF_SELF_SERVICE_ONBOARDING": "disabled",
+    "CF_WORKERS_DEV": "true",
+    "CF_API_ROUTE_PATTERN": "",
+    "CF_API_ROUTE_ZONE": "",
+    "CF_API_BASE_URL": "https://your-staging-worker.workers.dev",
+    "CF_WEB_BASE_URL": "https://staging.fmcgbyalex.com"
+  }
+}
