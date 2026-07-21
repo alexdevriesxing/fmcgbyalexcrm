@@ -1,12 +1,25 @@
 import type {
+  AcceptInvitationRequest,
+  CreateInvitationRequest,
   DevelopmentBootstrapRequest,
   HealthResponse,
+  OnboardTenantRequest,
   ProblemDetails,
-  SetModuleEntitlementRequest
+  SetModuleEntitlementRequest,
+  UpdateMembershipRequest
 } from '@fmcgbyalex/contracts';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { secureHeaders } from 'hono/secure-headers';
+import {
+  acceptInvitation,
+  createInvitation,
+  getTenantAdministration,
+  listTenantOptions,
+  onboardTenant,
+  revokeInvitation,
+  updateMembership
+} from './administration';
 import { resolveAuthenticatedSession } from './identity';
 import {
   PlatformHttpError,
@@ -19,6 +32,12 @@ import {
 } from './platform';
 
 const app = new Hono<{ Bindings: Env; Variables: ApiVariables }>();
+const PRE_SESSION_PATHS = new Set([
+  '/v1/development/bootstrap',
+  '/v1/onboarding/tenant',
+  '/v1/tenant-options',
+  '/v1/invitations/accept'
+]);
 
 app.use('*', secureHeaders());
 app.use('*', async (c, next) => {
@@ -48,7 +67,9 @@ app.use(
       'Idempotency-Key',
       'X-Correlation-Id',
       'X-Tenant-Id',
-      'X-Dev-Identity-Subject'
+      'X-Dev-Identity-Subject',
+      'X-Dev-Identity-Email',
+      'X-Dev-Identity-Name'
     ],
     allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     exposeHeaders: ['X-Correlation-Id'],
@@ -78,8 +99,35 @@ app.post('/v1/development/bootstrap', async (c) => {
   return c.json(response, 201);
 });
 
+app.post('/v1/onboarding/tenant', async (c) => {
+  const input = await readJson<OnboardTenantRequest>(c.req.raw);
+  const response = await onboardTenant(
+    c.env,
+    c.req.raw,
+    c.get('correlationId'),
+    input
+  );
+  return c.json(response, response.replayed ? 200 : 201);
+});
+
+app.get('/v1/tenant-options', async (c) => {
+  return c.json(await listTenantOptions(c.env, c.req.raw));
+});
+
+app.post('/v1/invitations/accept', async (c) => {
+  const input = await readJson<AcceptInvitationRequest>(c.req.raw);
+  return c.json(
+    await acceptInvitation(
+      c.env,
+      c.req.raw,
+      c.get('correlationId'),
+      input
+    )
+  );
+});
+
 app.use('/v1/*', async (c, next) => {
-  if (c.req.path === '/v1/development/bootstrap') {
+  if (PRE_SESSION_PATHS.has(c.req.path)) {
     await next();
     return;
   }
@@ -150,6 +198,47 @@ app.patch('/v1/admin/modules/:moduleKey', async (c) => {
     input.enabled
   );
   return c.json(response);
+});
+
+app.get('/v1/admin/access', async (c) => {
+  return c.json(
+    await getTenantAdministration(c.env, c.req.raw, c.get('session'))
+  );
+});
+
+app.post('/v1/admin/invitations', async (c) => {
+  const input = await readJson<CreateInvitationRequest>(c.req.raw);
+  const response = await createInvitation(
+    c.env,
+    c.req.raw,
+    c.get('session'),
+    input
+  );
+  return c.json(response, response.replayed ? 200 : 201);
+});
+
+app.delete('/v1/admin/invitations/:invitationId', async (c) => {
+  return c.json(
+    await revokeInvitation(
+      c.env,
+      c.req.raw,
+      c.get('session'),
+      c.req.param('invitationId')
+    )
+  );
+});
+
+app.patch('/v1/admin/members/:userId', async (c) => {
+  const input = await readJson<UpdateMembershipRequest>(c.req.raw);
+  return c.json(
+    await updateMembership(
+      c.env,
+      c.req.raw,
+      c.get('session'),
+      c.req.param('userId'),
+      input
+    )
+  );
 });
 
 app.notFound((c) => {

@@ -1,4 +1,8 @@
-import type { ModuleEntitlement } from '@fmcgbyalex/contracts';
+import type {
+  InvitationSummary,
+  MembershipSummary,
+  ModuleEntitlement
+} from '@fmcgbyalex/contracts';
 
 const modules: ModuleEntitlement[] = [
   { key: 'platform', enabled: true, status: 'foundation', label: 'Platform & Admin', description: 'Tenants, users, roles, workflow, files and audit', version: 1 },
@@ -26,6 +30,49 @@ const kpis = [
   ['€73K', 'Open rebates', '12 require action']
 ];
 
+const members: MembershipSummary[] = [
+  {
+    userId: 'usr_alex',
+    email: 'alex@fmcgbyalex.com',
+    displayName: 'Alex de Vries',
+    status: 'active',
+    roles: ['tenant-admin'],
+    createdAt: '2026-07-21T09:00:00.000Z',
+    updatedAt: '2026-07-21T09:00:00.000Z'
+  },
+  {
+    userId: 'usr_sales',
+    email: 'sales@example.com',
+    displayName: 'Commercial Manager',
+    status: 'active',
+    roles: ['operator'],
+    createdAt: '2026-07-21T09:00:00.000Z',
+    updatedAt: '2026-07-21T09:00:00.000Z'
+  },
+  {
+    userId: 'usr_finance',
+    email: 'finance@example.com',
+    displayName: 'Finance Controller',
+    status: 'active',
+    roles: ['viewer'],
+    createdAt: '2026-07-21T09:00:00.000Z',
+    updatedAt: '2026-07-21T09:00:00.000Z'
+  }
+];
+
+const invitations: InvitationSummary[] = [
+  {
+    id: 'inv_1',
+    email: 'operations@example.com',
+    displayName: 'Operations Lead',
+    status: 'pending',
+    roles: ['operator'],
+    expiresAt: '2026-07-28T09:00:00.000Z',
+    createdAt: '2026-07-21T09:00:00.000Z',
+    acceptedAt: null
+  }
+];
+
 export function App() {
   return (
     <div className="app-shell">
@@ -47,6 +94,7 @@ export function App() {
           <span className="eyebrow">Current company</span>
           <strong>Demo FMCG Group</strong>
           <small>Netherlands · EUR</small>
+          <button className="tenant-switch" type="button">Switch company</button>
         </div>
       </aside>
 
@@ -97,6 +145,47 @@ export function App() {
             <div className="progress-row"><span>Traditional trade</span><progress value="62" max="100">62%</progress></div>
             <div className="progress-row"><span>E-commerce</span><progress value="88" max="100">88%</progress></div>
             <div className="progress-row"><span>Campaign ROI</span><progress value="71" max="100">71%</progress></div>
+          </article>
+        </section>
+
+        <section className="section-heading" id="admin">
+          <div><span className="eyebrow">Tenant control plane</span><h2>People, roles and access</h2></div>
+          <button className="primary-button" type="button">Invite team member</button>
+        </section>
+
+        <section className="admin-summary" aria-label="Administration summary">
+          <article><span>Active members</span><strong>{members.filter((member) => member.status === 'active').length}</strong><small>Across 3 system roles</small></article>
+          <article><span>Pending invitations</span><strong>{invitations.filter((invitation) => invitation.status === 'pending').length}</strong><small>Encrypted one-time acceptance</small></article>
+          <article><span>Authentication</span><strong>OIDC</strong><small>Passkeys and MFA ready</small></article>
+          <article><span>Tenant isolation</span><strong>Enforced</strong><small>Membership verified per request</small></article>
+        </section>
+
+        <section className="admin-grid">
+          <article className="admin-panel">
+            <div className="panel-heading"><div><span className="eyebrow">Company access</span><h3>Members</h3></div><button className="ghost-button compact" type="button">Manage roles</button></div>
+            <div className="member-list">
+              {members.map((member) => (
+                <div className="member-row" key={member.userId}>
+                  <div className="avatar" aria-hidden="true">{member.displayName.split(' ').map((part) => part[0]).join('').slice(0, 2)}</div>
+                  <div className="member-copy"><strong>{member.displayName}</strong><small>{member.email}</small></div>
+                  <div className="role-stack">{member.roles.map((role) => <span className="role-badge" key={role}>{role}</span>)}</div>
+                  <span className={`member-status ${member.status}`}>{member.status}</span>
+                  <button className="row-menu" type="button" aria-label={`Manage ${member.displayName}`}>•••</button>
+                </div>
+              ))}
+            </div>
+          </article>
+
+          <article className="admin-panel invitation-panel">
+            <div className="panel-heading"><div><span className="eyebrow">Secure onboarding</span><h3>Invitations</h3></div><span className="secure-chip">AES-256-GCM</span></div>
+            {invitations.map((invitation) => (
+              <div className="invitation-card" key={invitation.id}>
+                <div><strong>{invitation.displayName ?? invitation.email}</strong><small>{invitation.email}</small></div>
+                <div className="invitation-meta"><span>{invitation.roles.join(', ')}</span><span>Expires in 7 days</span></div>
+                <div className="invitation-actions"><button className="ghost-button compact" type="button">Copy secure link</button><button className="text-button danger" type="button">Revoke</button></div>
+              </div>
+            ))}
+            <div className="security-note"><strong>Invitation safety</strong><p>Acceptance secrets are encrypted at rest, bound to a verified identity email and never written to logs or event payloads.</p></div>
           </article>
         </section>
       </main>

@@ -27,6 +27,11 @@ export const PLATFORM_PERMISSIONS = [
   'platform.modules.read',
   'platform.modules.manage',
   'platform.tenants.manage',
+  'platform.memberships.read',
+  'platform.memberships.manage',
+  'platform.roles.read',
+  'platform.roles.manage',
+  'platform.invitations.manage',
   'platform.audit.read'
 ] as const;
 
@@ -51,6 +56,10 @@ export type TenantSummary = {
   defaultTimezone: string;
 };
 
+export type TenantOption = TenantSummary & {
+  membershipStatus: 'active';
+};
+
 export type UserSummary = {
   id: string;
   displayName: string;
@@ -62,6 +71,11 @@ export type SessionContextResponse = {
   roles: string[];
   permissions: string[];
   modules: ModuleEntitlement[];
+};
+
+export type TenantOptionsResponse = {
+  user: UserSummary | null;
+  tenants: TenantOption[];
 };
 
 export type SetModuleEntitlementRequest = {
@@ -84,6 +98,93 @@ export type DevelopmentBootstrapResponse = {
   tenantId: string;
   userId: string;
   created: boolean;
+};
+
+export type OnboardTenantRequest = {
+  tenantName: string;
+  tenantSlug: string;
+  adminDisplayName: string;
+  defaultCurrency: string;
+  defaultLocale: string;
+  defaultTimezone: string;
+};
+
+export type OnboardTenantResponse = {
+  tenantId: string;
+  userId: string;
+  replayed: boolean;
+};
+
+export type RoleSummary = {
+  id: string;
+  key: string;
+  displayName: string;
+  system: boolean;
+  permissions: string[];
+};
+
+export type MembershipSummary = {
+  userId: string;
+  email: string;
+  displayName: string;
+  status: 'invited' | 'active' | 'suspended';
+  roles: string[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type InvitationSummary = {
+  id: string;
+  email: string;
+  displayName: string | null;
+  status: 'pending' | 'accepted' | 'revoked' | 'expired';
+  roles: string[];
+  expiresAt: string;
+  createdAt: string;
+  acceptedAt: string | null;
+};
+
+export type TenantAdministrationResponse = {
+  memberships: MembershipSummary[];
+  roles: RoleSummary[];
+  invitations: InvitationSummary[];
+};
+
+export type CreateInvitationRequest = {
+  email: string;
+  displayName?: string;
+  roleKeys: string[];
+};
+
+export type CreateInvitationResponse = {
+  invitation: InvitationSummary;
+  acceptanceToken: string;
+  replayed: boolean;
+};
+
+export type AcceptInvitationRequest = {
+  token: string;
+};
+
+export type AcceptInvitationResponse = {
+  tenant: TenantSummary;
+  userId: string;
+  roles: string[];
+};
+
+export type UpdateMembershipRequest = {
+  status: 'active' | 'suspended';
+  roleKeys: string[];
+};
+
+export type UpdateMembershipResponse = {
+  membership: MembershipSummary;
+  replayed: boolean;
+};
+
+export type RevokeInvitationResponse = {
+  invitation: InvitationSummary;
+  replayed: boolean;
 };
 
 export type HealthResponse = {

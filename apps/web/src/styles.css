@@ -26,14 +26,18 @@ nav { display: grid; gap: 8px; }
 .nav-item:hover, .nav-item.active { color: white; background: rgba(255,255,255,.09); }
 .tenant-card { margin-top: auto; padding: 16px; border: 1px solid rgba(255,255,255,.12); border-radius: 16px; background: rgba(255,255,255,.05); }
 .tenant-card strong, .tenant-card small { display: block; margin-top: 5px; }
+.tenant-switch { width: 100%; margin-top: 14px; padding: 9px 10px; border: 1px solid rgba(255,255,255,.14); border-radius: 10px; color: #dff36c; background: rgba(255,255,255,.06); font-weight: 750; }
 
 main { padding: 30px clamp(20px,4vw,58px) 60px; overflow: hidden; }
-.topbar, .section-heading, .module-title-row, .progress-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.topbar, .section-heading, .module-title-row, .progress-row, .panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .topbar h1, .section-heading h2 { margin: 4px 0 0; }
 .eyebrow { color: #6d837e; font-size: .75rem; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
 .top-actions { display: flex; gap: 10px; }
 .ghost-button, .primary-button { min-height: 42px; padding: 0 16px; border-radius: 12px; border: 1px solid #cddbd6; background: white; color: #17312e; font-weight: 750; }
 .primary-button { border-color: #173f39; color: white; background: #173f39; }
+.ghost-button.compact { min-height: 34px; padding: 0 12px; font-size: .8rem; }
+.text-button { padding: 6px; border: 0; background: transparent; font-weight: 800; }
+.text-button.danger { color: #9b3a3a; }
 
 .hero {
   margin-top: 26px; padding: clamp(26px,5vw,52px); border-radius: 28px; color: white;
@@ -50,7 +54,7 @@ main { padding: 30px clamp(20px,4vw,58px) 60px; overflow: hidden; }
 .hero-status strong { margin: 8px 0; }
 
 .kpi-grid { margin-top: 22px; display: grid; grid-template-columns: repeat(6,minmax(150px,1fr)); gap: 14px; }
-.kpi-card, .module-card, .workbench article { border: 1px solid #dce6e2; background: rgba(255,255,255,.86); box-shadow: 0 10px 28px rgba(25,52,47,.05); }
+.kpi-card, .module-card, .workbench article, .admin-summary article, .admin-panel { border: 1px solid #dce6e2; background: rgba(255,255,255,.86); box-shadow: 0 10px 28px rgba(25,52,47,.05); }
 .kpi-card { padding: 18px; border-radius: 18px; }
 .kpi-card span, .kpi-card strong, .kpi-card small { display: block; }
 .kpi-card span, .kpi-card small { color: #6d837e; }
@@ -74,9 +78,45 @@ main { padding: 30px clamp(20px,4vw,58px) 60px; overflow: hidden; }
 .progress-row { margin: 16px 0; }
 progress { width: 55%; accent-color: #2f7d68; }
 
+.admin-summary { display: grid; grid-template-columns: repeat(4,minmax(180px,1fr)); gap: 14px; }
+.admin-summary article { padding: 20px; border-radius: 18px; }
+.admin-summary span, .admin-summary strong, .admin-summary small { display: block; }
+.admin-summary span, .admin-summary small { color: #6d837e; }
+.admin-summary strong { margin: 10px 0 6px; font-size: 1.35rem; }
+.admin-grid { margin-top: 14px; display: grid; grid-template-columns: minmax(0,1.35fr) minmax(320px,.65fr); gap: 14px; }
+.admin-panel { padding: 24px; border-radius: 22px; }
+.panel-heading h3 { margin: 5px 0 0; font-size: 1.25rem; }
+.member-list { margin-top: 18px; display: grid; }
+.member-row { min-width: 0; display: grid; grid-template-columns: 42px minmax(160px,1fr) minmax(120px,auto) auto 34px; align-items: center; gap: 12px; padding: 14px 0; border-top: 1px solid #e3ebe8; }
+.member-row:first-child { border-top: 0; }
+.avatar { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 14px; color: #173f39; background: #eaf3b3; font-size: .78rem; font-weight: 900; }
+.member-copy { min-width: 0; }
+.member-copy strong, .member-copy small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.member-copy small { margin-top: 4px; color: #71837f; }
+.role-stack { display: flex; flex-wrap: wrap; gap: 5px; justify-content: flex-end; }
+.role-badge { padding: 5px 8px; border-radius: 999px; color: #225f52; background: #e3f2ed; font-size: .7rem; font-weight: 800; }
+.member-status { padding: 5px 8px; border-radius: 999px; font-size: .68rem; font-weight: 850; text-transform: uppercase; }
+.member-status.active { color: #1e654f; background: #daf2e8; }
+.member-status.suspended { color: #8a3a3a; background: #f5dddd; }
+.member-status.invited { color: #735f12; background: #f6efc4; }
+.row-menu { width: 34px; height: 34px; border: 0; border-radius: 10px; color: #59706a; background: transparent; }
+.row-menu:hover { background: #edf3f1; }
+.secure-chip { padding: 6px 9px; border-radius: 999px; color: #245d50; background: #dcf0e9; font-size: .7rem; font-weight: 850; }
+.invitation-card { margin-top: 18px; padding: 16px; border: 1px solid #dce6e2; border-radius: 16px; background: #f9fbfa; }
+.invitation-card strong, .invitation-card small { display: block; }
+.invitation-card small { margin-top: 4px; color: #71837f; }
+.invitation-meta { margin: 14px 0; display: flex; justify-content: space-between; gap: 12px; color: #6d837e; font-size: .78rem; }
+.invitation-actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.security-note { margin-top: 18px; padding: 16px; border-radius: 16px; color: #d9eee8; background: #173f39; }
+.security-note p { margin: 7px 0 0; color: #bbd4cd; line-height: 1.5; font-size: .88rem; }
+
 @media (max-width: 1280px) {
   .kpi-grid { grid-template-columns: repeat(3,1fr); }
   .module-grid { grid-template-columns: repeat(3,1fr); }
+  .admin-summary { grid-template-columns: repeat(2,1fr); }
+}
+@media (max-width: 1080px) {
+  .admin-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 980px) {
   .app-shell { grid-template-columns: 1fr; }
@@ -92,5 +132,9 @@ progress { width: 55%; accent-color: #2f7d68; }
   .topbar, .section-heading { flex-direction: column; }
   .hero { grid-template-columns: 1fr; }
   .hero-status { min-width: 0; }
-  .kpi-grid, .module-grid, .workbench { grid-template-columns: 1fr; }
+  .kpi-grid, .module-grid, .workbench, .admin-summary { grid-template-columns: 1fr; }
+  .member-row { grid-template-columns: 42px 1fr auto; }
+  .role-stack { grid-column: 2 / -1; justify-content: flex-start; }
+  .member-status { grid-column: 2; width: fit-content; }
+  .row-menu { grid-column: 3; grid-row: 1; }
 }
