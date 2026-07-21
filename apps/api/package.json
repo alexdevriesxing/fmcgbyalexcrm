@@ -1,6 +1,6 @@
 {
   "name": "@fmcgbyalex/api",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,17 +9,20 @@
     "deploy": "wrangler deploy",
     "lint": "tsc -p tsconfig.json --noEmit",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "node --test",
+    "test": "vitest run",
     "cf-typegen": "wrangler types"
   },
   "dependencies": {
     "@fmcgbyalex/contracts": "workspace:*",
     "@fmcgbyalex/domain": "workspace:*",
-    "hono": "^4.12.31"
+    "hono": "^4.12.31",
+    "jose": "^6.2.3"
   },
   "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.18.6",
     "@cloudflare/workers-types": "^5.20260718.1",
     "typescript": "^5.9.2",
+    "vitest": "^4.1.0",
     "wrangler": "^4.0.0"
   }
 }
