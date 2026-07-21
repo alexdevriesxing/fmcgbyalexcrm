@@ -6,6 +6,7 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3
 const HEX32_PATTERN = /^[0-9a-f]{32}$/i;
 const PLACEHOLDER_PATTERNS = [
   /^0+$/,
+  /^1+$/,
   /placeholder/i,
   /replace[-_ ]?me/i,
   /example/i,
@@ -19,8 +20,13 @@ if (!ALLOWED_ENVIRONMENTS.has(environment)) {
 }
 
 const workerName = safeName(required('CF_WORKER_NAME'), 'CF_WORKER_NAME');
-const d1Name = safeName(required('CF_D1_DATABASE_NAME'), 'CF_D1_DATABASE_NAME');
-const d1Id = resourceId(required('CF_D1_DATABASE_ID'), 'CF_D1_DATABASE_ID', UUID_PATTERN);
+const controlD1Name = safeName(required('CF_D1_DATABASE_NAME'), 'CF_D1_DATABASE_NAME');
+const controlD1Id = resourceId(required('CF_D1_DATABASE_ID'), 'CF_D1_DATABASE_ID', UUID_PATTERN);
+const tenantD1Name = safeName(required('CF_TENANT_D1_DATABASE_NAME'), 'CF_TENANT_D1_DATABASE_NAME');
+const tenantD1Id = resourceId(required('CF_TENANT_D1_DATABASE_ID'), 'CF_TENANT_D1_DATABASE_ID', UUID_PATTERN);
+if (controlD1Id === tenantD1Id || controlD1Name === tenantD1Name) {
+  fail('Control-plane and tenant data-plane D1 resources must be different.');
+}
 const kvId = resourceId(required('CF_KV_NAMESPACE_ID'), 'CF_KV_NAMESPACE_ID', HEX32_PATTERN);
 const r2Bucket = safeName(required('CF_R2_BUCKET_NAME'), 'CF_R2_BUCKET_NAME');
 const outboxQueue = safeName(required('CF_OUTBOX_QUEUE_NAME'), 'CF_OUTBOX_QUEUE_NAME');
@@ -47,7 +53,7 @@ if (environment === 'production' && (!routePattern || !routeZone)) {
 const config = {
   $schema: 'node_modules/wrangler/config-schema.json',
   name: workerName,
-  main: 'src/index.ts',
+  main: 'src/worker.ts',
   compatibility_date: '2026-07-21',
   compatibility_flags: ['nodejs_compat'],
   workers_dev: workersDev,
@@ -71,9 +77,15 @@ const config = {
   d1_databases: [
     {
       binding: 'CONTROL_DB',
-      database_name: d1Name,
-      database_id: d1Id,
+      database_name: controlD1Name,
+      database_id: controlD1Id,
       migrations_dir: '../../database/migrations/control'
+    },
+    {
+      binding: 'TENANT_DB',
+      database_name: tenantD1Name,
+      database_id: tenantD1Id,
+      migrations_dir: '../../database/migrations/tenant'
     }
   ],
   kv_namespaces: [{ binding: 'CONFIG', id: kvId }],
