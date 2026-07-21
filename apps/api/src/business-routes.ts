@@ -83,14 +83,14 @@ export function registerBusinessRoutes(app: ApiApp): void {
     c.json(await getInventoryOverview(c.env, c.req.raw, c.get('session')))
   );
 
-  app.get('/v1/inventory/balances', async (c) =>
-    c.json(
-      await getInventoryBalances(c.env, c.req.raw, c.get('session'), {
-        ...(c.req.query('warehouseId') ? { warehouseId: c.req.query('warehouseId') } : {}),
-        ...(c.req.query('variantId') ? { variantId: c.req.query('variantId') } : {})
-      })
-    )
-  );
+  app.get('/v1/inventory/balances', async (c) => {
+    const warehouseId = c.req.query('warehouseId');
+    const variantId = c.req.query('variantId');
+    const filters: { warehouseId?: string; variantId?: string } = {};
+    if (warehouseId) filters.warehouseId = warehouseId;
+    if (variantId) filters.variantId = variantId;
+    return c.json(await getInventoryBalances(c.env, c.req.raw, c.get('session'), filters));
+  });
 
   app.post('/v1/inventory/receipts', async (c) => {
     const response = await receiveStock(
@@ -156,16 +156,16 @@ export function registerBusinessRoutes(app: ApiApp): void {
   app.get('/v1/inventory/fefo', async (c) => {
     const variantId = c.req.query('variantId');
     const quantityBase = c.req.query('quantityBase');
+    const warehouseId = c.req.query('warehouseId');
     if (!variantId || !quantityBase) {
       throw validationError('variantId and quantityBase query parameters are required.');
     }
-    return c.json(
-      await getFefoCandidates(c.env, c.req.raw, c.get('session'), {
-        variantId,
-        quantityBase,
-        ...(c.req.query('warehouseId') ? { warehouseId: c.req.query('warehouseId') } : {})
-      })
-    );
+    const fefoInput: { variantId: string; warehouseId?: string; quantityBase: string } = {
+      variantId,
+      quantityBase
+    };
+    if (warehouseId) fefoInput.warehouseId = warehouseId;
+    return c.json(await getFefoCandidates(c.env, c.req.raw, c.get('session'), fefoInput));
   });
 
   app.get('/v1/inventory/aging', async (c) =>
