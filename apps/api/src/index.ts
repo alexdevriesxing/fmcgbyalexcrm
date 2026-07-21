@@ -7,13 +7,13 @@ import type {
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { secureHeaders } from 'hono/secure-headers';
+import { resolveAuthenticatedSession } from './identity';
 import {
   PlatformHttpError,
   bootstrapDevelopmentTenant,
   enforceModule,
   enforcePermission,
   isPlatformHttpError,
-  resolveSession,
   setModuleEntitlement,
   type ApiVariables
 } from './platform';
@@ -84,7 +84,7 @@ app.use('/v1/*', async (c, next) => {
     return;
   }
 
-  const session = await resolveSession(
+  const session = await resolveAuthenticatedSession(
     c.env,
     c.req.raw,
     c.get('correlationId')
