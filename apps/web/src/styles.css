@@ -29,13 +29,13 @@ nav { display: grid; gap: 8px; }
 .tenant-switch { width: 100%; margin-top: 14px; padding: 9px 10px; border: 1px solid rgba(255,255,255,.14); border-radius: 10px; color: #dff36c; background: rgba(255,255,255,.06); font-weight: 750; }
 
 main { padding: 30px clamp(20px,4vw,58px) 60px; overflow: hidden; }
-.topbar, .section-heading, .module-title-row, .progress-row, .panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.topbar, .section-heading, .module-title-row, .progress-row, .panel-heading, .approval-card-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .topbar h1, .section-heading h2 { margin: 4px 0 0; }
 .eyebrow { color: #6d837e; font-size: .75rem; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
 .top-actions { display: flex; gap: 10px; }
 .ghost-button, .primary-button { min-height: 42px; padding: 0 16px; border-radius: 12px; border: 1px solid #cddbd6; background: white; color: #17312e; font-weight: 750; }
 .primary-button { border-color: #173f39; color: white; background: #173f39; }
-.ghost-button.compact { min-height: 34px; padding: 0 12px; font-size: .8rem; }
+.ghost-button.compact, .primary-button.compact { min-height: 34px; padding: 0 12px; font-size: .8rem; }
 .text-button { padding: 6px; border: 0; background: transparent; font-weight: 800; }
 .text-button.danger { color: #9b3a3a; }
 
@@ -54,7 +54,7 @@ main { padding: 30px clamp(20px,4vw,58px) 60px; overflow: hidden; }
 .hero-status strong { margin: 8px 0; }
 
 .kpi-grid { margin-top: 22px; display: grid; grid-template-columns: repeat(6,minmax(150px,1fr)); gap: 14px; }
-.kpi-card, .module-card, .workbench article, .admin-summary article, .admin-panel { border: 1px solid #dce6e2; background: rgba(255,255,255,.86); box-shadow: 0 10px 28px rgba(25,52,47,.05); }
+.kpi-card, .module-card, .workbench article, .admin-summary article, .admin-panel, .approval-summary article, .approval-panel, .policy-panel { border: 1px solid #dce6e2; background: rgba(255,255,255,.86); box-shadow: 0 10px 28px rgba(25,52,47,.05); }
 .kpi-card { padding: 18px; border-radius: 18px; }
 .kpi-card span, .kpi-card strong, .kpi-card small { display: block; }
 .kpi-card span, .kpi-card small { color: #6d837e; }
@@ -77,6 +77,41 @@ main { padding: 30px clamp(20px,4vw,58px) 60px; overflow: hidden; }
 .workbench ul { margin: 0; padding-left: 20px; line-height: 2; }
 .progress-row { margin: 16px 0; }
 progress { width: 55%; accent-color: #2f7d68; }
+
+.approval-summary { display: grid; grid-template-columns: repeat(4,minmax(180px,1fr)); gap: 14px; }
+.approval-summary article { padding: 20px; border-radius: 18px; }
+.approval-summary span, .approval-summary strong, .approval-summary small { display: block; }
+.approval-summary span, .approval-summary small { color: #6d837e; }
+.approval-summary strong { margin: 10px 0 6px; font-size: 1.35rem; }
+.approval-layout { margin-top: 14px; display: grid; grid-template-columns: minmax(0,1.45fr) minmax(280px,.55fr); gap: 14px; align-items: start; }
+.approval-panel, .policy-panel { padding: 24px; border-radius: 22px; }
+.approval-list { margin-top: 18px; display: grid; gap: 14px; }
+.approval-card { padding: 18px; border: 1px solid #dce6e2; border-radius: 18px; background: #fbfcfc; }
+.approval-card h4 { margin: 5px 0 0; font-size: 1.04rem; }
+.approval-card p { margin: 12px 0; color: #667c77; line-height: 1.55; }
+.approval-resource { color: #6d837e; font-size: .7rem; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; }
+.approval-status { padding: 6px 9px; border-radius: 999px; font-size: .68rem; font-weight: 900; text-transform: uppercase; }
+.approval-status.pending { color: #735f12; background: #f6efc4; }
+.approval-status.approved { color: #1e654f; background: #daf2e8; }
+.approval-status.rejected, .approval-status.cancelled, .approval-status.expired { color: #8a3a3a; background: #f5dddd; }
+.approval-meta { display: flex; flex-wrap: wrap; gap: 8px 16px; color: #6d837e; font-size: .78rem; }
+.approval-progress { margin-top: 15px; display: flex; gap: 8px; }
+.approval-step { padding: 6px 10px; border-radius: 999px; color: #6a5c13; background: #f6efc4; font-size: .7rem; font-weight: 850; }
+.approval-step.approved { color: #1e654f; background: #daf2e8; }
+.approval-step.rejected { color: #8a3a3a; background: #f5dddd; }
+.approval-actions { margin-top: 16px; display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
+.execution-note { margin-top: 15px; padding: 12px 14px; border-radius: 14px; color: #225f52; background: #e7f3ef; }
+.execution-note strong, .execution-note span { display: block; }
+.execution-note span { margin-top: 4px; color: #617773; font-size: .8rem; }
+.policy-panel { position: sticky; top: 24px; color: #e9f6f2; background: linear-gradient(160deg,#173f39,#225f52); border-color: #173f39; }
+.policy-panel .eyebrow { color: #b9d1ca; }
+.policy-panel h3 { margin: 8px 0; font-size: 1.3rem; }
+.policy-panel p { color: #c5dcd6; line-height: 1.55; }
+.policy-panel dl { margin: 20px 0; display: grid; gap: 12px; }
+.policy-panel dl div { padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,.12); }
+.policy-panel dt { color: #a9c7bf; font-size: .72rem; font-weight: 800; text-transform: uppercase; }
+.policy-panel dd { margin: 5px 0 0; overflow-wrap: anywhere; font-size: .88rem; }
+.policy-panel .ghost-button { width: 100%; border-color: rgba(255,255,255,.22); color: white; background: rgba(255,255,255,.08); }
 
 .admin-summary { display: grid; grid-template-columns: repeat(4,minmax(180px,1fr)); gap: 14px; }
 .admin-summary article { padding: 20px; border-radius: 18px; }
@@ -113,10 +148,11 @@ progress { width: 55%; accent-color: #2f7d68; }
 @media (max-width: 1280px) {
   .kpi-grid { grid-template-columns: repeat(3,1fr); }
   .module-grid { grid-template-columns: repeat(3,1fr); }
-  .admin-summary { grid-template-columns: repeat(2,1fr); }
+  .admin-summary, .approval-summary { grid-template-columns: repeat(2,1fr); }
 }
 @media (max-width: 1080px) {
-  .admin-grid { grid-template-columns: 1fr; }
+  .admin-grid, .approval-layout { grid-template-columns: 1fr; }
+  .policy-panel { position: static; }
 }
 @media (max-width: 980px) {
   .app-shell { grid-template-columns: 1fr; }
@@ -128,13 +164,15 @@ progress { width: 55%; accent-color: #2f7d68; }
 @media (max-width: 700px) {
   main { padding: 22px 16px 42px; }
   .sidebar { padding: 20px 16px; }
-  .topbar, .section-heading, .hero { align-items: stretch; }
-  .topbar, .section-heading { flex-direction: column; }
+  .topbar, .section-heading, .hero, .approval-card-head { align-items: stretch; }
+  .topbar, .section-heading, .approval-card-head { flex-direction: column; }
   .hero { grid-template-columns: 1fr; }
   .hero-status { min-width: 0; }
-  .kpi-grid, .module-grid, .workbench, .admin-summary { grid-template-columns: 1fr; }
+  .kpi-grid, .module-grid, .workbench, .admin-summary, .approval-summary { grid-template-columns: 1fr; }
   .member-row { grid-template-columns: 42px 1fr auto; }
   .role-stack { grid-column: 2 / -1; justify-content: flex-start; }
   .member-status { grid-column: 2; width: fit-content; }
   .row-menu { grid-column: 3; grid-row: 1; }
+  .approval-actions { justify-content: stretch; }
+  .approval-actions button { flex: 1; }
 }
