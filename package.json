@@ -1,6 +1,6 @@
 {
   "name": "fmcgbyalex-superapp",
-  "version": "0.5.0",
+  "version": "0.7.0",
   "private": true,
   "packageManager": "pnpm@10.13.1",
   "engines": {
